@@ -51,7 +51,7 @@ defmodule Bucketixir.Command.List do
     end
   end
 
-  @doc "Authenticates and lists buckets using Req + ReqS3"
+  @doc "Authenticates and lists buckets using ExAws"
   @spec list_buckets(config()) :: :ok | {:error, String.t()}
   def list_buckets(config) do
     IO.puts("Connecting to #{config.endpoint}...")
@@ -77,27 +77,36 @@ defmodule Bucketixir.Command.List do
     end
   end
 
-  @spec parse_and_display_buckets(String.t()) :: :ok | {:error, String.t()}
-  defp parse_and_display_buckets(xml_body) do
-    try do
-      buckets = xml_body |> xpath(~x"//Bucket"l)
-
-      IO.puts("Available buckets: #{length(buckets)}")
-
-      if Enum.empty?(buckets) do
-        IO.puts("No buckets found")
-      else
-        Enum.each(buckets, fn bucket ->
-          name = bucket |> xpath(~x"./Name/text()"s)
-          creation_date = bucket |> xpath(~x"./CreationDate/text()"s)
-          IO.puts("- #{name} (Created: #{creation_date})")
-        end)
+  @spec parse_and_display_buckets(list() | String.t() | nil) :: :ok | {:error, String.t()}
+  defp parse_and_display_buckets(body) do
+    buckets =
+      cond do
+        body in [nil, ""] -> []
+        is_list(body) -> body
+        true -> body |> xpath(~x"//Bucket"l)
       end
 
-      :ok
-    rescue
-      e ->
-        {:error, "Failed to parse XML response: #{inspect(e)}"}
+    IO.puts("Available buckets: #{length(buckets)}")
+
+    Enum.each(buckets, fn bucket ->
+      if is_map(bucket) and Map.has_key?(bucket, :name) do
+        # ExAws parsed bucket
+        IO.puts("- #{bucket.name} (Created: #{bucket.creation_date})")
+      else
+        # XML bucket
+        name = bucket |> xpath(~x"./Name/text()"s)
+        creation_date = bucket |> xpath(~x"./CreationDate/text()"s)
+        IO.puts("- #{name} (Created: #{creation_date})")
+      end
+    end)
+
+    if Enum.empty?(buckets) do
+      IO.puts("No buckets found")
     end
+
+    :ok
+  rescue
+    e ->
+      {:error, "Failed to parse response: #{inspect(e)}"}
   end
 end
