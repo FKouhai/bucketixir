@@ -1,5 +1,6 @@
 defmodule Bucketixir.CLI do
   alias Bucketixir.Command.Auth
+  alias Bucketixir.Command.List
 
   @moduledoc """
   CLI module for Bucketixir.
@@ -7,11 +8,15 @@ defmodule Bucketixir.CLI do
 
   def main(argv) do
     Application.put_env(:elixir, :ansi_enabled, true)
+
     {subcommand_path, result} = Optimus.parse!(spec(), argv)
 
     case subcommand_path do
       [:auth] ->
         Auth.run(result)
+
+      [:list] ->
+        List.run(result)
 
       _ ->
         IO.puts(:standard_error, "Error Unknown subcommand structure, run 'bucketixir --help")
@@ -68,7 +73,7 @@ defmodule Bucketixir.CLI do
         ],
         list: [
           name: "list",
-          about: "lists all the objects inside the bucket"
+          about: "lists all the buckets"
         ],
         write: [
           name: "write",
