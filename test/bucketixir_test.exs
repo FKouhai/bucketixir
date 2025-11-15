@@ -43,7 +43,7 @@ defmodule BucketixirTest do
 
   test "main with unknown subcommand prints error" do
     IO.puts("Running test: main with unknown subcommand runs authentication")
-    argv = ["list"]
+    argv = ["thisdoesnotexist"]
 
     output = capture_io(:stderr, fn -> CLI.main(argv) end)
 
