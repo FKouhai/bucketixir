@@ -9,19 +9,25 @@ defmodule Bucketixir.CLI do
   def main(argv) do
     Application.put_env(:elixir, :ansi_enabled, true)
 
-    {subcommand_path, result} = Optimus.parse!(spec(), argv)
+    case Optimus.parse(spec(), argv) do
+      :help ->
+        IO.puts(Optimus.help(spec()))
 
-    case subcommand_path do
-      [:auth] ->
-        Auth.run(result)
+      {:ok, subcommand_path, result} ->
+        run_subcommand(subcommand_path, result)
 
-      [:list] ->
-        List.run(result)
-
-      _ ->
-        IO.puts(:standard_error, "Error Unknown subcommand structure, run 'bucketixir --help")
-        unless Mix.env() == :test, do: System.halt(1)
+      {:error, reason} ->
+        IO.puts(:standard_error, "Error: #{reason}")
+        unless System.get_env("MIX_ENV") == "test", do: System.halt(1)
     end
+  end
+
+  defp run_subcommand([:auth], result), do: Auth.run(result)
+  defp run_subcommand([:list], result), do: List.run(result)
+
+  defp run_subcommand(_, _result) do
+    IO.puts(:standard_error, "Error Unknown subcommand structure, run 'bucketixir --help")
+    unless System.get_env("MIX_ENV") == "test", do: System.halt(1)
   end
 
   defp spec do

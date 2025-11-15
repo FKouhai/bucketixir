@@ -7,6 +7,10 @@ defmodule Bucketixir.Command.List do
   alias Optimus.ParseResult
   import SweetXml
 
+  defp s3_client do
+    Application.get_env(:bucketixir, :s3_client, Bucketixir.S3Client)
+  end
+
   @type config :: %{
           access_key_id: String.t(),
           secret_access_key: String.t(),
@@ -19,20 +23,13 @@ defmodule Bucketixir.Command.List do
   @config_file Path.join(System.user_home!(), ".bucketixir.yaml")
 
   def run(%ParseResult{}) do
-    case load_config() do
-      {:ok, config} ->
-        case list_buckets(config) do
-          :ok ->
-            :ok
-
-          {:error, reason} ->
-            IO.puts(:standard_error, "Error: #{reason}")
-            System.halt(1)
-        end
-
+    with {:ok, config} <- load_config(),
+         :ok <- list_buckets(config) do
+      :ok
+    else
       {:error, reason} ->
-        IO.puts(:standard_error, "Error: #{inspect(reason)}")
-        System.halt(1)
+        IO.puts(:standard_error, "Error: #{reason}")
+        unless System.get_env("MIX_ENV") == "test", do: System.halt(1)
     end
   end
 
@@ -56,7 +53,7 @@ defmodule Bucketixir.Command.List do
   def list_buckets(config) do
     IO.puts("Connecting to #{config.endpoint}...")
 
-    result = Bucketixir.S3Client.s3_request(config.endpoint, config.region, config, nil)
+    result = s3_client().s3_request(config.endpoint, config.region, config, nil)
 
     case result do
       {:ok, %{status_code: 200, body: body}} ->

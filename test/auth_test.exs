@@ -1,5 +1,5 @@
 defmodule Bucketixir.Command.AuthTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   import ExUnit.CaptureIO
   alias Bucketixir.Command.Auth
 

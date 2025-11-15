@@ -40,7 +40,7 @@ defmodule Bucketixir.Command.Auth do
 
       {:error, reason} ->
         IO.puts(:standard_error, "unable to create file: #{reason}")
-        unless Mix.env() == :test, do: System.halt(1)
+        unless System.get_env("MIX_ENV") == "test", do: System.halt(1)
     end
 
     IO.puts("succesfully received auth params")

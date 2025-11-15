@@ -5,6 +5,7 @@
 - Test all: `mix test`
 - Test single file: `mix test path/to/test_file.exs`
 - Test single test: `mix test path/to/test_file.exs:line_number`
+- Test with coverage: `mix test.cover`
 - Lint: `mix credo`
 
 ## Code Style Guidelines
@@ -21,3 +22,8 @@
 - **Config**: Store in YAML format at `~/.bucketixir.yaml`
 - **CLI**: Use Optimus for command-line parsing</content>
 <parameter name="filePath">/home/franky/sw/elixir/bucketixir/AGENTS.md
+
+
+## Additional Information
+- **Runpod s3 available features**: can be found here https://docs.runpod.io/storage/s3-api#core-operations
+- **Recommneded workflow**: reason -> code -> build -> execute generated binary trying it out the command thats being worked on
