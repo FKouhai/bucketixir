@@ -1,6 +1,7 @@
 defmodule Bucketixir.CLI do
   alias Bucketixir.Command.Auth
   alias Bucketixir.Command.List
+  alias Bucketixir.Command.ListObject
 
   @moduledoc """
   CLI module for Bucketixir.
@@ -24,6 +25,7 @@ defmodule Bucketixir.CLI do
 
   defp run_subcommand([:auth], result), do: Auth.run(result)
   defp run_subcommand([:list], result), do: List.run(result)
+  defp run_subcommand([:list_object], result), do: ListObject.run(result)
 
   defp run_subcommand(_, _result) do
     IO.puts(:standard_error, "Error Unknown subcommand structure, run 'bucketixir --help")
@@ -80,6 +82,18 @@ defmodule Bucketixir.CLI do
         list: [
           name: "list",
           about: "lists all the buckets"
+        ],
+        list_object: [
+          name: "list-object",
+          about: "lists objects in a given bucket",
+          args: [
+            bucket: [
+              value_name: "bucket",
+              help: "bucket name to list objects from",
+              required: false,
+              parser: :string
+            ]
+          ]
         ],
         write: [
           name: "write",
