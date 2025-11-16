@@ -37,8 +37,14 @@ defmodule Bucketixir.Command.Write do
 
     case File.read(src) do
       {:ok, body} ->
-        S3.put_object(bucket, dst, body)
-        |> ExAws.request(ex_aws_config)
+        case S3.put_object(bucket, dst, body) |> ExAws.request(ex_aws_config) do
+          {:ok, response} ->
+            IO.puts("File successfully uploaded to #{dst} (status: #{response.status_code})")
+            :ok
+
+          {:error, reason} ->
+            {:error, "Failed to upload the file: #{inspect(reason)}"}
+        end
 
       {:error, reason} ->
         {:error, "Failed to read file: #{reason}"}
