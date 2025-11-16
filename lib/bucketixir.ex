@@ -15,6 +15,16 @@ defmodule Bucketixir.CLI do
       :help ->
         IO.puts(Optimus.help(spec()))
 
+      {:help, subcommand_path} ->
+        subcommand_atom = :lists.last(subcommand_path)
+        subcommand_spec = Enum.find(spec().subcommands, &(&1.subcommand == subcommand_atom))
+
+        if subcommand_spec do
+          IO.puts(Optimus.help(subcommand_spec))
+        else
+          IO.puts(Optimus.help(spec()))
+        end
+
       {:ok, subcommand_path, result} ->
         run_subcommand(subcommand_path, result)
 
