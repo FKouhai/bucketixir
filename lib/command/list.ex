@@ -4,6 +4,7 @@ defmodule Bucketixir.Command.List do
   Reads the configuration from ~/.bucketixir.yaml and
   uses Req + ReqS3 for ListBuckets operations
   """
+  alias Bucketixir.Command.Helpers
   alias Optimus.ParseResult
   import SweetXml
 
@@ -19,11 +20,9 @@ defmodule Bucketixir.Command.List do
         }
   @doc "lists all buckets for the authenticated user"
   @spec run(ParseResult.t()) :: :ok | {:error, String.t()}
-  # "@config_file is the path to the config file inside the filesystem"
-  @config_file Path.join(System.user_home!(), ".bucketixir.yaml")
 
   def run(%ParseResult{}) do
-    with {:ok, config} <- load_config(),
+    with {:ok, config} <- Helpers.load_config(),
          :ok <- list_buckets(config) do
       :ok
     else
@@ -33,25 +32,10 @@ defmodule Bucketixir.Command.List do
     end
   end
 
-  # Uses YamlElixir to read the credentials from the config file
-  # Then it stores them into a map
-  defp load_config do
-    case YamlElixir.read_from_file(@config_file, []) do
-      {:ok, %{"credentials" => credentials}} when is_map(credentials) ->
-        {:ok, credentials |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)}
-
-      {:ok, _} ->
-        {:error, "config file found but credentials structure is invalid"}
-
-      {:error, reason} ->
-        {:error, "failed to parse yaml: #{inspect(reason)}"}
-    end
-  end
-
   @doc "Authenticates and lists buckets using ExAws"
   @spec list_buckets(config()) :: :ok | {:error, String.t()}
   def list_buckets(config) do
-    IO.puts("Connecting to #{config.endpoint}...")
+    IO.puts("Connecting to #{config.endpoint}")
 
     result = s3_client().s3_request(config.endpoint, config.region, config, nil)
 
