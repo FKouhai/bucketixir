@@ -37,17 +37,19 @@ defmodule Bucketixir.S3Client do
     Application.put_env(:ex_aws, :secret_access_key, config.secret_access_key)
     uri = URI.parse(endpoint)
 
-    ExAws.Config.new(:s3)
-    # 2. Configure the custom endpoint for connection
-    |> Map.put(:endpoint, %{
-      host: uri.host,
-      scheme: uri.scheme,
-      port: uri.port,
-      path: uri.path
-    })
-    |> Map.put(:region, region)
-    |> Map.put(:signature_version, :v4)
-    # Use the argument region for signing
-    |> Map.put(:aws_signing_region, region)
+    ex_aws_config =
+      ExAws.Config.new(:s3)
+      |> Map.put(:endpoint, %{
+        host: uri.host,
+        scheme: uri.scheme,
+        port: uri.port,
+        path: uri.path
+      })
+      |> Map.put(:region, region)
+      |> Map.put(:signature_version, :v4)
+      |> Map.put(:aws_signing_region, region)
+
+    Application.put_env(:ex_aws, :config, ex_aws_config)
+    ex_aws_config
   end
 end

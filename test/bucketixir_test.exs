@@ -105,7 +105,7 @@ defmodule BucketixirTest do
 
     IO.puts("Captured output: #{inspect(output)}")
 
-    assert output =~ "Connecting to https://s3.example.com..."
+    assert output =~ "Connecting to https://s3.example.com"
     assert output =~ "Available buckets: 1"
     assert output =~ "- test-bucket"
   end

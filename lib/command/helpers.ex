@@ -11,7 +11,10 @@ defmodule Bucketixir.Command.Helpers do
   def load_config do
     case YamlElixir.read_from_file(@config_file, []) do
       {:ok, %{"credentials" => credentials}} when is_map(credentials) ->
-        {:ok, credentials |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)}
+        config = credentials |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
+        # Trim trailing / from endpoint to avoid double slashes in URL
+        config = Map.update!(config, :endpoint, &String.trim_trailing(&1, "/"))
+        {:ok, config}
 
       {:ok, _} ->
         {:error, "config file found but credentials structure is invalid"}

@@ -2,6 +2,7 @@ defmodule Bucketixir.CLI do
   alias Bucketixir.Command.Auth
   alias Bucketixir.Command.List
   alias Bucketixir.Command.ListObject
+  alias Bucketixir.Command.Write
 
   @moduledoc """
   CLI module for Bucketixir.
@@ -26,6 +27,7 @@ defmodule Bucketixir.CLI do
   defp run_subcommand([:auth], result), do: Auth.run(result)
   defp run_subcommand([:list], result), do: List.run(result)
   defp run_subcommand([:list_object], result), do: ListObject.run(result)
+  defp run_subcommand([:write], result), do: Write.run(result)
 
   defp run_subcommand(_, _result) do
     IO.puts(:standard_error, "Error Unknown subcommand structure, run 'bucketixir --help")
@@ -99,17 +101,29 @@ defmodule Bucketixir.CLI do
           name: "write",
           about: "writes a file to a given path inside the bucket",
           args: [
+            bucket: [
+              value_name: "bucket",
+              help: "bucket name",
+              required: true,
+              parser: :string
+            ]
+          ],
+          options: [
             destination_path: [
               value_name: "destination",
               help: "destination path inside the bucket",
               required: true,
-              parser: :string
+              parser: :string,
+              long: "dst",
+              short: "d"
             ],
             source_path: [
               value_name: "source",
               help: "source path for your file(s) inside your filesystem",
               required: true,
-              parser: :string
+              parser: :string,
+              long: "src",
+              short: "s"
             ]
           ]
         ],
