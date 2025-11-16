@@ -1,8 +1,9 @@
 defmodule Bucketixir.Command.ListObject do
   @moduledoc """
   List objects in a bucket for bucketixir.
-  Reads the configuration from ~/.bucketixir.yaml and
+  Reads the configuration from ~/.bucketixir.yaml
   """
+  alias Bucketixir.Command.Helpers
   alias Optimus.ParseResult
   import SweetXml
 
@@ -19,36 +20,17 @@ defmodule Bucketixir.Command.ListObject do
   @doc "lists all objects in the given bucket"
   @spec run(ParseResult.t()) :: :ok | {:error, String.t()}
   # "@config_file is the path to the config file inside the filesystem"
-  @config_file Path.join(System.user_home!(), ".bucketixir.yaml")
 
   def run(%ParseResult{args: %{bucket: bucket}}) do
     bucket = String.trim(bucket)
 
-    with {:ok, config} <- load_config(),
+    with {:ok, config} <- Helpers.load_config(),
          :ok <- list_objects(config, bucket) do
       :ok
     else
       {:error, reason} ->
         IO.puts(:standard_error, "Error: #{reason}")
         unless System.get_env("MIX_ENV") == "test", do: System.halt(1)
-    end
-  end
-
-  # Uses YamlElixir to read the credentials from the config file
-  # Then it stores them into a map
-  defp load_config do
-    case YamlElixir.read_from_file(@config_file, []) do
-      {:ok, %{"credentials" => credentials}} when is_map(credentials) ->
-        config = credentials |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
-        # Trim trailing / from endpoint to avoid double slashes in URL
-        config = Map.update!(config, :endpoint, &String.trim_trailing(&1, "/"))
-        {:ok, config}
-
-      {:ok, _} ->
-        {:error, "config file found but credentials structure is invalid"}
-
-      {:error, reason} ->
-        {:error, "failed to parse yaml: #{inspect(reason)}"}
     end
   end
 
